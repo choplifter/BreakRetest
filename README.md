@@ -14,7 +14,7 @@ Traditional technical indicators often fail to capture this pattern because they
 
 Below is a technical layout illustrating how a resistance zone shifts through states from initial definition to execution.
 
-![Break-Retest Lifecycle Schematic](./lifecycle.svg)
+![Break-Retest Lifecycle Schematic](./lifecycle.png)
 
 ---
 
@@ -22,7 +22,7 @@ Below is a technical layout illustrating how a resistance zone shifts through st
 
 Every single zone tracked in the repository operates within a strict algorithmic lifecycle. The programmatic flow transitions sequentially as follows:
 
-![State Machine Architecture](./statemachine.svg)
+![State Machine Architecture](./statemachine.png)
 
 1. **`Active`:** The level has been validated by price action (e.g., a structural swing point). Price remains bounded on the native side of the level.
 2. **`Broken`:** An asset bar achieves a confirmed close completely penetrating the outer boundaries of the zone. This confirms structural breakout momentum.
