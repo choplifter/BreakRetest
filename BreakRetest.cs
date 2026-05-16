@@ -15,7 +15,7 @@ using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
-// HIER IST DER MAGISCHE FIX: DIE ENUMS SIND JETZT AUSSERHALB DES NAMESPACES!
+// Enums GLOBAL definieren (Der Fix gegen den NinjaTrader Code-Generator Bug)
 public enum ZoneState { Active, Broken, Retesting, Confirmed, Invalidated }
 public enum ZoneType { Support, Resistance }
 public enum TriggerMode { SimplePriceAction, Engulfing, VolumeBackedEngulfing } 
@@ -105,7 +105,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         }
     }
 
-    // ACHTUNG: Der Klassenname muss dem Dateinamen entsprechen (z.B. BreakRetest)
+    // HAUPT-INDIKATOR
     public class BreakRetest : Indicator
     {
         private List<TradingZone> activeZones;
@@ -133,11 +133,16 @@ namespace NinjaTrader.NinjaScript.Indicators
         [Display(Name="Trigger Logic", Description="Wähle die Bestätigungs-Logik", Order=1, GroupName="2. Trigger Settings")]
         public TriggerMode SelectedTrigger { get; set; }
 
+        // NEU: Alarm Toggle
+        [NinjaScriptProperty]
+        [Display(Name="Use Alerts", Description="Spielt einen Sound ab, wenn ein Setup live bestätigt wird", Order=2, GroupName="2. Trigger Settings")]
+        public bool UseAlerts { get; set; }
+
         protected override void OnStateChange()
         {
             if (State == State.SetDefaults)
             {
-                Description                 = "Break & Retest Indicator";
+                Description                 = "Break & Retest Indicator Pro";
                 Name                        = "BreakRetest";
                 Calculate                   = Calculate.OnBarClose;
                 IsOverlay                   = true;
@@ -146,6 +151,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 ToleranceTicks              = 4;
                 UsePriorDayLevels           = true; 
                 SelectedTrigger             = TriggerMode.VolumeBackedEngulfing; 
+                UseAlerts                   = true; // Alarme sind standardmäßig an
             }
             else if (State == State.Configure)
             {
@@ -228,6 +234,13 @@ namespace NinjaTrader.NinjaScript.Indicators
                                 Draw.ArrowUp(this, "Entry_" + zone.Id, true, 0, Low[0] - TickSize * 10, Brushes.Lime);
                                 if(SelectedTrigger == TriggerMode.VolumeBackedEngulfing)
                                     Draw.Text(this, "Txt_" + zone.Id, "VOL", 0, Low[0] - TickSize * 20, Brushes.Lime);
+                                
+                                // NEU: ALARM LOGIK FÜR LONG
+                                if (UseAlerts && State == State.Realtime)
+                                {
+                                    PlaySound(NinjaTrader.Core.Globals.InstallDir + @"\sounds\Alert1.wav");
+                                    Print(Time[0].ToString() + " - BREAK-RETEST: Long Entry an Zone " + zone.Id);
+                                }
                             }
                             else if (Close[0] < zone.LowerBound) zone.State = ZoneState.Invalidated;
                             break;
@@ -251,6 +264,13 @@ namespace NinjaTrader.NinjaScript.Indicators
                                 Draw.ArrowDown(this, "Entry_" + zone.Id, true, 0, High[0] + TickSize * 10, Brushes.Red);
                                 if(SelectedTrigger == TriggerMode.VolumeBackedEngulfing)
                                     Draw.Text(this, "Txt_" + zone.Id, "VOL", 0, High[0] + TickSize * 20, Brushes.Red);
+                                
+                                // NEU: ALARM LOGIK FÜR SHORT
+                                if (UseAlerts && State == State.Realtime)
+                                {
+                                    PlaySound(NinjaTrader.Core.Globals.InstallDir + @"\sounds\Alert2.wav");
+                                    Print(Time[0].ToString() + " - BREAK-RETEST: Short Entry an Zone " + zone.Id);
+                                }
                             }
                             else if (Close[0] > zone.UpperBound) zone.State = ZoneState.Invalidated;
                             break;
@@ -289,60 +309,3 @@ namespace NinjaTrader.NinjaScript.Indicators
         }
     }
 }
-
-#region NinjaScript generated code. Neither change nor remove.
-
-namespace NinjaTrader.NinjaScript.Indicators
-{
-	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
-	{
-		private BreakRetest[] cacheBreakRetest;
-		public BreakRetest BreakRetest(int swingStrength, int toleranceTicks, bool usePriorDayLevels, TriggerMode selectedTrigger)
-		{
-			return BreakRetest(Input, swingStrength, toleranceTicks, usePriorDayLevels, selectedTrigger);
-		}
-
-		public BreakRetest BreakRetest(ISeries<double> input, int swingStrength, int toleranceTicks, bool usePriorDayLevels, TriggerMode selectedTrigger)
-		{
-			if (cacheBreakRetest != null)
-				for (int idx = 0; idx < cacheBreakRetest.Length; idx++)
-					if (cacheBreakRetest[idx] != null && cacheBreakRetest[idx].SwingStrength == swingStrength && cacheBreakRetest[idx].ToleranceTicks == toleranceTicks && cacheBreakRetest[idx].UsePriorDayLevels == usePriorDayLevels && cacheBreakRetest[idx].SelectedTrigger == selectedTrigger && cacheBreakRetest[idx].EqualsInput(input))
-						return cacheBreakRetest[idx];
-			return CacheIndicator<BreakRetest>(new BreakRetest(){ SwingStrength = swingStrength, ToleranceTicks = toleranceTicks, UsePriorDayLevels = usePriorDayLevels, SelectedTrigger = selectedTrigger }, input, ref cacheBreakRetest);
-		}
-	}
-}
-
-namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
-{
-	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
-	{
-		public Indicators.BreakRetest BreakRetest(int swingStrength, int toleranceTicks, bool usePriorDayLevels, TriggerMode selectedTrigger)
-		{
-			return indicator.BreakRetest(Input, swingStrength, toleranceTicks, usePriorDayLevels, selectedTrigger);
-		}
-
-		public Indicators.BreakRetest BreakRetest(ISeries<double> input , int swingStrength, int toleranceTicks, bool usePriorDayLevels, TriggerMode selectedTrigger)
-		{
-			return indicator.BreakRetest(input, swingStrength, toleranceTicks, usePriorDayLevels, selectedTrigger);
-		}
-	}
-}
-
-namespace NinjaTrader.NinjaScript.Strategies
-{
-	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
-	{
-		public Indicators.BreakRetest BreakRetest(int swingStrength, int toleranceTicks, bool usePriorDayLevels, TriggerMode selectedTrigger)
-		{
-			return indicator.BreakRetest(Input, swingStrength, toleranceTicks, usePriorDayLevels, selectedTrigger);
-		}
-
-		public Indicators.BreakRetest BreakRetest(ISeries<double> input , int swingStrength, int toleranceTicks, bool usePriorDayLevels, TriggerMode selectedTrigger)
-		{
-			return indicator.BreakRetest(input, swingStrength, toleranceTicks, usePriorDayLevels, selectedTrigger);
-		}
-	}
-}
-
-#endregion
